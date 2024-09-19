@@ -1,0 +1,49 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Callbacker
+      id: callbacker
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Callbacker
+        setup-command: ''
+        command: gradle test --tests edu.utdallas.cs2336.TestCallbacker
+        timeout: 2
+        max-score: 15
+    - name: Concrete Math
+      id: concrete-math
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Concrete Math
+        setup-command: ''
+        command: gradle test --tests edu.utdallas.cs2336.TestConcreteMath
+        timeout: 10
+    - name: Shirt Measurements
+      id: shirt-measurements
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Shirt Measurements
+        setup-command: ''
+        command: gradle test --tests edu.utdallas.cs2336.TestShirtMeasurements
+        timeout: 2
+        max-score: 15
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        CALLBACKER_RESULTS: "${{steps.callbacker.outputs.result}}"
+        CONCRETE-MATH_RESULTS: "${{steps.concrete-math.outputs.result}}"
+        SHIRT-MEASUREMENTS_RESULTS: "${{steps.shirt-measurements.outputs.result}}"
+      with:
+        runners: callbacker,concrete-math,shirt-measurements
